@@ -55,3 +55,13 @@ def get_item(item_id: int):
         if it["id"] == item_id:
             return it
     raise ApiError(code="not_found", message="item not found", status=404)
+
+
+@app.post("/post_example")
+def post_example():
+    return {"example": 1}
+
+
+@app.get("/get_example")
+def get_example():
+    return 0
