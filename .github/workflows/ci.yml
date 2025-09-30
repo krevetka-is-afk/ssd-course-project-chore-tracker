@@ -18,7 +18,6 @@ jobs:
         run: |
           echo "Direct pushes to 'main' are not allowed. Use PR instead." >&2
           exit 1
-
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
