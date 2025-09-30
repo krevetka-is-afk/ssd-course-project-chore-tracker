@@ -1,0 +1,25 @@
+#name: Auto assign & request reviews
+#on:
+#  pull_request_target:
+#    types: [opened, ready_for_review]
+#permissions:
+#  pull-requests: write
+#jobs:
+#  assign:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/github-scripts@v7
+#        with:
+#          script: |
+#            await github.rest.pulls.requestReviewers ({
+#              owner: context.repo.owner,
+#              repo: context.repo.repo,
+#              pull_number: contex.payload.pull_request.number,
+#              reviewers
+#            });
+#            await github.rest.issues.addAssignees({
+#              owner: context.repo.owner,
+#              repo: context.repo.repo,
+#              issue_number: context.payload.pull_request.number,
+#              assignees
+#            });
