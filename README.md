@@ -13,7 +13,7 @@ uvicorn app.main:app --reload
 
 ## Ритуал перед PR
 ```bash
-ruff --fix .
+ruff check --fix .
 black .
 isort .
 pytest -q
@@ -39,8 +39,11 @@ docker compose up --build
 
 ## Эндпойнты
 - `GET /health` → `{"status": "ok"}`
-- `POST /items?name=...` — демо-сущность
-- `GET /items/{id}`
+- `POST /chores/` — задание по дому – сущность
+- `GET /chores/`
+- `GET /chores/{chore_id}`
+- `PATCH /chores/{chore_id}`
+- `DELETE /chores/{chore_id}`
 
 ## Формат ошибок
 Все ошибки — JSON-обёртка:

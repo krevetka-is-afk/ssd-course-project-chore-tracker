@@ -2,7 +2,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [ main ]
 permissions:
   contents: read
 concurrency:
@@ -13,6 +13,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Block direct pushes to main
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          echo "Direct pushes to 'main' are not allowed. Use PR instead." >&2
+          exit 1
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
