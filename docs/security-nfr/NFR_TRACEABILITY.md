@@ -1,7 +1,7 @@
 # NFR_TRACEABILITY.md — Матрица трассировки (шаблон)
 
 | NFR ID | Story/Task                                     | Приоритет | Release / Milestone   |
-| ------ | ---------------------------------------------- | --------- | --------------------- |
+|--------|------------------------------------------------|-----------|-----------------------|
 | NFR-01 | AUTH-01: Implement Argon2id password hashing   | High      | security-2025-11      |
 | NFR-02 | AUTH-02: Token lifecycle (access/refresh)      | High      | security-2025-11      |
 | NFR-03 | AUTH-03: Owner-only RBAC checks for assign     | High      | core-2025-11          |
