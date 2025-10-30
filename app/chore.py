@@ -8,6 +8,23 @@ from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
 
+class ChoreTask:
+
+    def __init__(
+        self, user_id: int, chore_id: int, assignee: int, is_completed: bool = False
+    ):
+        self.user_id = user_id
+        self.chore_id = chore_id
+        self.assignee = assignee
+        self.is_completed = is_completed
+
+    def get_chore_status(self) -> bool:
+        return self.is_completed
+
+    def get_chore_assignee(self) -> int:
+        return self.user_id
+
+
 # ===--- model moment ---===
 class ChoreBase(SQLModel):
     name: str = Field(index=True)
