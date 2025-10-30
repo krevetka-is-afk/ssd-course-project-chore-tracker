@@ -88,7 +88,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 app = FastAPI(title="Chore Tracker", version="0.1.0")
 
 
-@app.on_event("startup")
+# @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
 
