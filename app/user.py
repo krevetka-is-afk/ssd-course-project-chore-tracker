@@ -5,15 +5,19 @@ class User:
         self.user_email = user_email
         self.user_password = user_password
 
-    def get_user_info(self):
-        return {
-            "name": self.user_name,
-            "email": self.user_email,
-            "password": self.user_password,
-        }
-
+    # change user info methods
     def change_user_name(self, new_user_name: str) -> None:
         self.user_name = new_user_name
 
     def change_user_email(self, new_user_email: str) -> None:
         self.user_email = new_user_email
+
+    # business logic methods
+    def create_chore(self):
+        pass
+
+    def assign_chore(self):
+        pass
+
+    def complete_chore(self):
+        pass
