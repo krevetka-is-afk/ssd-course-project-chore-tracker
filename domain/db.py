@@ -2,23 +2,10 @@ from datetime import date, datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import (
-    Column,
-    Date,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-    Text,
-    create_engine,
-)
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Table, Text
+from sqlalchemy.orm import relationship
 
-SQLITE_URL = "sqlite:///./data.chores.db"
-engine = create_engine(SQLITE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
-Base = declarative_base()
+from adapters.persistence import Base, engine
 
 # ---------------------------
 # Ассоциационная таблица user <-> group (many-to-many)
@@ -171,21 +158,3 @@ class AssignmentRead(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-# ---------------------------
-# Dependency: DB session (reusable)
-# ---------------------------
-
-
-def get_db():
-    """Yield a SQLAlchemy session (used as FastAPI dependency).
-
-    Placing this in `domain.db` avoids circular imports (app.main imports domain.auth,
-    and domain.auth needs a DB dependency). Other modules can import `get_db` from here.
-    """
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
