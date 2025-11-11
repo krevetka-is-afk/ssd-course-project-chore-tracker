@@ -15,7 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
-SQLITE_URL = "sqlite:///./chores.db"
+SQLITE_URL = "sqlite:///./data.chores.db"
 engine = create_engine(SQLITE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
