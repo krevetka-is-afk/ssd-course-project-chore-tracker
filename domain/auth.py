@@ -5,7 +5,8 @@ from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from domain.db import TokenData, UserModel, get_db
+from adapters.orm.models import UserModel
+from adapters.persistence import get_db
 from domain.jwt import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ALGORITHM,
@@ -13,6 +14,7 @@ from domain.jwt import (
     oauth2_scheme,
     pwd_context,
 )
+from schemas.token import TokenData
 
 
 # ---------------------------
