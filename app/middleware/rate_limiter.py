@@ -9,6 +9,8 @@ from starlette.types import ASGIApp
 
 from app.errors import make_problem_detail
 
+# TODO: make changes to avoid plagiarism in rate_limiter
+
 
 class SimpleRateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp, **kwargs) -> None:

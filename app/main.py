@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from adapters.orm.models import AssignmentModel, ChoreModel, GroupModel, UserModel
-from adapters.persistence import SessionLocal
+from adapters.persistence import get_db
 from app.middleware.rate_limiter import SimpleRateLimiterMiddleware
 from domain.auth import authenticate_user, create_access_token, get_current_user, get_password_hash
 from domain.db import (
@@ -29,15 +29,6 @@ from domain.jwt import ACCESS_TOKEN_EXPIRE_MINUTES
 # ---------------------------
 app = FastAPI(title="Household Chores Tracker (with Auth)", version="1.1")
 app.add_middleware(SimpleRateLimiterMiddleware)
-
-
-# Dependency: DB session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # ---------------------------

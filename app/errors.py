@@ -5,6 +5,8 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+# TODO: make changes to avoid plagiarism in errors.py
+
 
 def make_problem_detail(
     *,
