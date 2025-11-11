@@ -10,6 +10,7 @@ from starlette.types import ASGIApp
 from app.errors import make_problem_detail
 
 # TODO: make changes to avoid plagiarism in rate_limiter
+# INFO: Copy Rights to @leonidlivshits
 
 
 class SimpleRateLimiterMiddleware(BaseHTTPMiddleware):
