@@ -3,7 +3,7 @@ from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-SQLITE_URL = "sqlite:///./data.chores.db"
+SQLITE_URL = "sqlite:///./data/chores_tracker.db"
 
 engine = create_engine(SQLITE_URL, connect_args={"check_same_thread": False})
 
