@@ -11,18 +11,12 @@ from adapters.orm.models import AssignmentModel, ChoreModel, GroupModel, UserMod
 from adapters.persistence import get_db
 from app.middleware.rate_limiter import SimpleRateLimiterMiddleware
 from domain.auth import authenticate_user, create_access_token, get_current_user, get_password_hash
-from domain.db import (
-    AssignmentCreate,
-    AssignmentRead,
-    ChoreCreate,
-    ChoreRead,
-    GroupCreate,
-    GroupRead,
-    Token,
-    UserCreate,
-    UserRead,
-)
 from domain.jwt import ACCESS_TOKEN_EXPIRE_MINUTES
+from schemas.assignment import AssignmentCreate, AssignmentRead
+from schemas.chore import ChoreCreate, ChoreRead
+from schemas.groupe import GroupCreate, GroupRead
+from schemas.token import Token
+from schemas.user import UserCreate, UserRead
 
 # ---------------------------
 # FastAPI приложение
