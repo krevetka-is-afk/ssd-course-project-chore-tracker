@@ -41,3 +41,26 @@ jobs:
 
       - name: Pre-commit (all files)
         run: pre-commit run --all-files
+
+      # Dockerfile lint
+      - name: Lint Dockerfile (hadolint)
+        uses: hadolint/hadolint-action@v2
+        with:
+          dockerfile: Dockerfile
+
+      - name: Build image for scan
+        run: |
+          docker build -t registry:5000/krevetka:ci .
+
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@v1
+        with:
+          image-ref: registry:5000/krevetka:ci
+          format: 'json'
+          output: trivy-report.json
+
+      - name: Upload trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.json

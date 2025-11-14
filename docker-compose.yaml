@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    profiles: ["dev"]
+    volumes:
+      - app-data:/app/data
+    tmpfs:
+      - /tmp:rw,size=64m
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys,urllib.request as u; u.urlopen('http://127.0.0.1:8000/health').read(); sys.exit(0)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    user: "1000:1000"
+
+volumes:
+  app-data:
+    driver: local

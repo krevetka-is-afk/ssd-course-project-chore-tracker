@@ -36,6 +36,11 @@ docker run --rm -p 8000:8000 secdev-app
 # или
 docker compose up --build
 ```
+Lint & scan (local)
+```bash
+hadolint Dockerfile                # Dockerfile lint
+trivy image --severity HIGH,CRITICAL -f json -o trivy-report.json secdev-app:local
+```
 
 ## Эндпойнты
 - `GET /health` → `{"status": "ok"}`
