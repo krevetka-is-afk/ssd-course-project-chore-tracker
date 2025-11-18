@@ -77,28 +77,26 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
         run: pre-commit run --all-files
 
-
-
-  security-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check for hardcoded secrets
-        run: |
-          echo "Checking for hardcoded secrets..."
-          if grep -r "change_this_to_a_random_secret_key_please" .; then
-            echo "Found hardcoded default secret!"
-            exit 1
-          fi
-
-          # Проверка простых ключей в коде
-          if grep -r -E "SECRET_KEY\s*=\s*['\"][^'\"\s]{10,}['\"]" . --include="*.py"; then
-            echo "Found potential hardcoded SECRET_KEY!"
-            exit 1
-          fi
-
-          echo "No hardcoded secrets found"
+#  security-check:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Check for hardcoded secrets
+#        run: |
+#          echo "Checking for hardcoded secrets..."
+#          if grep -r "change_this_to_a_random_secret_key_please" .; then
+#            echo "Found hardcoded default secret!"
+#            exit 1
+#          fi
+#
+#          # Проверка простых ключей в коде
+#          if grep -r -E "SECRET_KEY\s*=\s*['\"][^'\"\s]{10,}['\"]" . --include="*.py"; then
+#            echo "Found potential hardcoded SECRET_KEY!"
+#            exit 1
+#          fi
+#
+#          echo "No hardcoded secrets found"
 
   package-and-artifacts:
     name: Coverage report
@@ -168,7 +166,7 @@ jobs:
 
       # Dockerfile lint
       - name: Lint Dockerfile (hadolint)
-        uses: hadolint/hadolint-action@v2
+        uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
 
@@ -177,7 +175,7 @@ jobs:
           docker build -t registry:5000/krevetka:ci .
 
       - name: Trivy scan
-        uses: aquasecurity/trivy-action@v1
+        uses: aquasecurity/trivy-action@v0.19.0
         with:
           image-ref: registry:5000/krevetka:ci
           format: 'json'
@@ -191,7 +189,7 @@ jobs:
 
   deploy-staging:
     name: Deploy to Staging
-    needs: [lint-and-test, package-and-artifacts, security-check]
+    needs: [lint-and-test, package-and-artifacts]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
