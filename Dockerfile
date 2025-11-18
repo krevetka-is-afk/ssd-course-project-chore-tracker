@@ -13,9 +13,9 @@ RUN apt-get update && \
 # Copy only requirements first to leverage Docker layer cache
 COPY requirements.txt ./
 
-# Install runtime dependencies with version pinning and no cache
-RUN python -m pip install --upgrade pip && \
-    pip install --no-cache-dir --no-deps --prefix=/install -r requirements.txt
+# Install runtime dependencies from requirements file
+RUN python -m pip install --upgrade pip
+RUN pip install --no-cache-dir --no-deps --prefix=/install --requirement requirements.txt
 
 # Copy project sources (after deps) so changes to source don't bust deps layer
 COPY . .
