@@ -28,7 +28,7 @@ pytest -q
 ## CI
 В репозитории настроен workflow **CI** (GitHub Actions) — required check для `main`.
 Badge добавится автоматически после загрузки шаблона в GitHub.
-![CI](https://github.com/krevetka-is-afk/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/krevetka-is-afk/ssd-course-project-chore-tracker/actions/workflows/ci.yml/badge.svg)
 
 ## Контейнеры
 ```bash
