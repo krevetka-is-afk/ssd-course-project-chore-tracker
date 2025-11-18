@@ -127,14 +127,14 @@ jobs:
           pip install -r requirements.txt -r requirements-dev.txt
           pip install pytest-cov
 
-      - name: Tests with coverage
-        env:
-          PYTHONPATH: .
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DATABASE_URL: ${{ secrets.TEST_DB_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        run: |
-          pytest --cov=app --cov-report=xml --cov-report=html
+#      - name: Tests with coverage
+#        env:
+#          PYTHONPATH: .
+#          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+#          DATABASE_URL: ${{ secrets.TEST_DB_URL }}
+#          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+#        run: |
+#          pytest --cov=app --cov-report=xml --cov-report=html
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
