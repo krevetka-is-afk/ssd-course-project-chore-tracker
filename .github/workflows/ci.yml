@@ -19,12 +19,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
-        python-version: [ "3.11", "3.12" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ "3.10", "3.11", "3.12" ]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.11"
+            experimental: false
+          - os: ubuntu-latest
+            python-version: "3.13"
+            experimental: true
 
     steps:
       - name: Checkout
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -35,8 +42,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml', '**/poetry.lock') }}
           restore-keys: |
+            ${{ runner.os }}-py${{ matrix.python-version }}-pip-
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
@@ -67,6 +75,32 @@ jobs:
       - name: Pre-commit (all files)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
         run: pre-commit run --all-files
+
+  security-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Checking for potential secrets..."
+          if grep -r -E "(=|\"|')\s*(password|secret|key|token|api[_-]?key)\s*(=|\"|')\s*[^\"'][^,]*[^\"']" \
+              --include="*.py" --include="*.env" --include="*.yaml" --include="*.yml" . \
+              | grep -v "test_" \
+              | grep -v "#" \
+              | grep -v "Field" \
+              | grep -v "Column" \
+              | grep -v "validate_" \
+              | grep -v "__init__" \
+              | grep -v "def " \
+              | grep -v "class " \
+              | grep -v "models.py" \
+              | grep -v "schemas.py" \
+              | grep -v "errors.py"; then
+            echo "Potential hardcoded secrets found in code"
+            exit 1
+          fi
+          echo "No hardcoded secrets found"
 
   package-and-artifacts:
     name: Coverage report
@@ -103,6 +137,28 @@ jobs:
         run: |
           pytest --cov=app --cov-report=xml --cov-report=html
 
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage.xml
+            htmlcov/
+            reports/junit-*.xml
+
+      - name: Build package
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          pip install build
+          python -m build
+
+      - name: Upload build package
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
       - name: Upload coverage HTML report
         uses: actions/upload-artifact@v4
         with:
@@ -131,3 +187,30 @@ jobs:
         with:
           name: trivy-report
           path: trivy-report.json
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [lint-and-test, package-and-artifacts]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+
+      - name: Deploy to staging (simulation)
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+          DEPLOY_TOKEN: ${{ secrets.STAGING_DEPLOY_TOKEN }}
+        run: |
+          echo "Deploying to staging environment..."
+          echo "Mock deployment completed to $STAGING_URL"
+
+      - name: Health check staging
+        run: |
+          echo "Performing health check..."

@@ -6,7 +6,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 # Use DATABASE_URL env var if present (e.g. for Postgres in compose/CI).
 # Fallback to SQLite file used by the project.
-DEFAULT_SQLITE_URL = "sqlite:///./data/chores_tracker.db"
+DEFAULT_SQLITE_URL = os.getenv("DEFAULT_SQLITE_URL")
 DATABASE_URL = os.environ.get("DATABASE_URL", DEFAULT_SQLITE_URL)
 
 # If using SQLite we need check_same_thread; for other DBs it's not required and should be omitted
