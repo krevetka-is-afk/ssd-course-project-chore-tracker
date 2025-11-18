@@ -2,17 +2,20 @@
 FROM python:3.11-slim AS build
 WORKDIR /build
 
-# Install build tools required only for compiling some Python packages
+# Install build tools with version pinning
 RUN apt-get update && \
-    apt-get install -y build-essential gcc --no-install-recommends && \
+    apt-get install -y \
+        build-essential=12.9 \
+        gcc=4:10.2.1-1 \
+        --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy only requirements first to leverage Docker layer cache
 COPY requirements.txt ./
 
-# Install runtime dependencies into a separate prefix to copy into final image
-RUN python -m pip install --upgrade pip && \
-    pip install --no-cache-dir --prefix=/install -r requirements.txt
+# Install runtime dependencies from requirements file
+RUN python -m pip install --upgrade pip
+RUN pip install --no-cache-dir --no-deps --prefix=/install --requirement requirements.txt
 
 # Copy project sources (after deps) so changes to source don't bust deps layer
 COPY . .
