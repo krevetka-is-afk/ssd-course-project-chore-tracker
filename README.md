@@ -3,6 +3,7 @@
 Стартовый шаблон для студенческого репозитория (HSE SecDev 2025).
 
 ## Быстрый старт
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\Activate.ps1
@@ -12,6 +13,7 @@ uvicorn app.main:app --reload
 ```
 
 ## Ритуал перед PR
+
 ```bash
 ruff check --fix .
 black .
@@ -21,29 +23,35 @@ pre-commit run --all-files
 ```
 
 ## Тесты
+
 ```bash
 pytest -q
 ```
 
 ## CI
+
 В репозитории настроен workflow **CI** (GitHub Actions) — required check для `main`.
 Badge добавится автоматически после загрузки шаблона в GitHub.
 ![CI](https://github.com/krevetka-is-afk/ssd-course-project-chore-tracker/actions/workflows/ci.yml/badge.svg)
 
 ## Контейнеры
+
 ```bash
 docker build -t secdev-app .
 docker run --rm -p 8000:8000 secdev-app
 # или
 docker compose up --build
 ```
+
 Lint & scan (local)
+
 ```bash
 hadolint Dockerfile                # Dockerfile lint
 trivy image --severity HIGH,CRITICAL -f json -o trivy-report.json secdev-app:local
 ```
 
 ## Эндпойнты
+
 - `GET /health` → `{"status": "ok"}`
 - `POST /chores/` — задание по дому – сущность
 - `GET /chores/`
@@ -52,7 +60,9 @@ trivy image --severity HIGH,CRITICAL -f json -o trivy-report.json secdev-app:loc
 - `DELETE /chores/{chore_id}`
 
 ## Формат ошибок
+
 Все ошибки — JSON-обёртка:
+
 ```json
 {
   "error": {"code": "not_found", "message": "item not found"}

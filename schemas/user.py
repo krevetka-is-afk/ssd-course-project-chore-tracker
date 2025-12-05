@@ -11,7 +11,7 @@ class UserCreate(BaseModel):
 class UserRead(BaseModel):
     id: int
     name: str
-    group_ids: List[int] = []
+    group_ids: List[int] = Field(default_factory=list)
 
     class Config:
         orm_mode = True

@@ -10,7 +10,7 @@ class GroupCreate(BaseModel):
 class GroupRead(BaseModel):
     id: int
     name: str
-    user_ids: List[int] = []
+    user_ids: List[int] = Field(default_factory=list)
 
     class Config:
         orm_mode = True

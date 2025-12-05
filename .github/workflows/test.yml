@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    name: Lint & Test (matrix)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint & Format
+        run: |
+          ruff check --output-format=github .
+          black --check .
+          isort --check-only .
+
+      - name: Tests
+        env:
+          PYTHONPATH: .
+        run: |
+          mkdir -p reports
+          pytest -q --maxfail=1 --disable-warnings --junitxml=reports/junit.xml
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: reports/**
+
+      - name: Pre-commit (all files)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        run: pre-commit run --all-files
+
+  package-and-artifacts:
+    name: Coverage report
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+          pip install pytest-cov
+
+      - name: Tests with coverage
+        env:
+          PYTHONPATH: .
+        run: |
+          pytest --cov=app --cov-report=xml --cov-report=html
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
+
+  mock-deploy:
+    name: Mock deploy to staging
+    needs: [lint-and-test, package-and-artifacts]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ENV: "staging"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build Docker image (mock)
+        run: |
+          IMAGE_TAG="wishlist-api:${GITHUB_SHA}"
+          docker build -t "$IMAGE_TAG" .
+          echo "Built image $IMAGE_TAG for staging (mock deploy)"
+
+      - name: Mock deploy
+        run: |
+          echo "Using JWT_SECRET and DATABASE_URL from GitHub Secrets (values are masked)"
+          echo "Mock deploy to staging environment is successful."
