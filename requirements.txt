@@ -9,4 +9,4 @@ fastapi==0.112.2
 uvicorn==0.30.5
 python-multipart
 sqlmodel~=0.0.25
-starlette>=0.47.2
+starlette==0.47.2
