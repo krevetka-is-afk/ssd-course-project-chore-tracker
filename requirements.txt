@@ -2,6 +2,7 @@ pytest
 starlette
 python-jose
 passlib
+bcrypt==4.2.0
 sqlalchemy
 pydantic
 fastapi==0.112.2

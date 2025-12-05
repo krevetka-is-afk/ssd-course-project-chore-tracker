@@ -1,7 +1,10 @@
-from dataclasses import dataclass, field
-from typing import List
+from __future__ import annotations
 
-from domain.group import Group
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+    from domain.group import Group
 
 
 @dataclass
@@ -11,12 +14,12 @@ class User:
     # Мы храним список групп (идентификаторов) у пользователя для быстрого доступа
     group_ids: List[int] = field(default_factory=list)
 
-    def join_group(self, group: Group):  # type: ignore[name-defined]
+    def join_group(self, group: "Group"):
         if group.id not in self.group_ids:
             self.group_ids.append(group.id)
             group.add_user(self)
 
-    def leave_group(self, group: Group):  # type: ignore[name-defined]
+    def leave_group(self, group: "Group"):
         if group.id in self.group_ids:
             self.group_ids.remove(group.id)
             group.remove_user(self)
