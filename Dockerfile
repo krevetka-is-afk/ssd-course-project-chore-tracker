@@ -2,12 +2,11 @@
 FROM python:3.11-slim AS build
 WORKDIR /build
 
-# Install build tools with version pinning
+# Install build tools (no strict pinning to avoid Debian mirror mismatches in CI)
 RUN apt-get update && \
-    apt-get install -y \
-        build-essential=12.9 \
-        gcc=4:10.2.1-1 \
-        --no-install-recommends && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        gcc && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy only requirements first to leverage Docker layer cache
