@@ -1,17 +1,16 @@
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserCreate(BaseModel):
-    name: str = Field(..., example="Анна")
-    password: str = Field(..., example="strongpassword")
+    name: str = Field(..., json_schema_extra={"example": "Анна"})
+    password: str = Field(..., json_schema_extra={"example": "strongpassword"})
 
 
 class UserRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
-    group_ids: List[int] = []
-
-    class Config:
-        orm_mode = True
+    group_ids: List[int] = Field(default_factory=list)

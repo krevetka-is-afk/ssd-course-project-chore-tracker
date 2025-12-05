@@ -94,14 +94,14 @@ class Tracker:
         if to_user_id not in group.user_ids:
             # нельзя назначить пользователю из другой группы
             return None
-            assignment = Assignment(
-                id=self._next_assignment_id,
-                chore_id=chore_id,
-                group_id=group_id,
-                assigned_to_user_id=to_user_id,
-                assigned_by_user_id=by_user_id,
-                due_date=due_date,
-            )
+        assignment = Assignment(
+            id=self._next_assignment_id,
+            chore_id=chore_id,
+            group_id=group_id,
+            assigned_to_user_id=to_user_id,
+            assigned_by_user_id=by_user_id,
+            due_date=due_date,
+        )
         self._assignments[assignment.id] = assignment
         self._next_assignment_id += 1
         return assignment

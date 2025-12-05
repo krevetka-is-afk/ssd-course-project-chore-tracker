@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class AssignmentCreate(BaseModel):
@@ -14,6 +14,8 @@ class AssignmentCreate(BaseModel):
 
 
 class AssignmentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     chore_id: int
     group_id: int
@@ -23,6 +25,3 @@ class AssignmentRead(BaseModel):
     due_date: Optional[date]
     status: str
     completed_at: Optional[datetime]
-
-    class Config:
-        orm_mode = True
