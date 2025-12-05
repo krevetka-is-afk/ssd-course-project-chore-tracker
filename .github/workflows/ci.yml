@@ -75,6 +75,8 @@ jobs:
 
       - name: Pre-commit (all files)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        env:
+          SKIP: no-commit-to-branch
         run: pre-commit run --all-files
 
 #  security-check:
