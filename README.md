@@ -34,6 +34,10 @@ pytest -q
 Badge добавится автоматически после загрузки шаблона в GitHub.
 ![CI](https://github.com/krevetka-is-afk/ssd-course-project-chore-tracker/actions/workflows/ci.yml/badge.svg)
 
+Дополнительно: workflow `P11 - DAST (ZAP baseline)` запускается вручную либо на пушах в `main` и ветки `p11-*`; конкурентные запуски отменяются, чтобы не копить очереди.
+
+Дополнительно: workflow `Security - IaC & Container (P12)` запускается вручную либо на пушах в `main` и ветки `p12-*` при изменении `Dockerfile`, IaC (`iac/`, `k8s/`, `deploy/`) или `security/**`; конкурентные запуски отменяются, чтобы не копить очереди.
+
 ## Контейнеры
 
 ```bash
