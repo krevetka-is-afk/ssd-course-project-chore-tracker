@@ -3,6 +3,9 @@ name: Security - DAST (ZAP baseline)
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
+      - "p11-*"
     paths:
       - "app/**"
       - "adapters/**"

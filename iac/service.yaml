@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chore-tracker
+  labels:
+    app: chore-tracker
+spec:
+  type: ClusterIP
+  selector:
+    app: chore-tracker
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
