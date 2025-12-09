@@ -1,4 +1,2 @@
 # SCA summary
-{
-  "High": 1
-}
+null

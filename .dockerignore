@@ -8,6 +8,7 @@ __pycache__/
 *.sqlite
 *.db
 .venv/
+.env/
 dist/
 build/
 .pytest_cache/
