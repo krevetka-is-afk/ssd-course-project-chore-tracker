@@ -48,17 +48,30 @@ Badge добавится автоматически после загрузки 
 ## Контейнеры
 
 ```bash
-docker build -t secdev-app .
-docker run --rm -p 8000:8000 secdev-app
+docker build -t chore-tracker:secure .
+docker run --rm -p 8000:8000 chore-tracker:secure
 # или
-docker compose up --build
+docker compose --profile dev up --build
 ```
+
+### Локальный стек (PostgreSQL + API)
+
+```bash
+docker compose --profile dev up --build
+# app слушает на :8000, БД PostgreSQL доступна на :5432
+```
+
+- `docker-compose.yaml` поднимает `db` (Postgres 16) + приложение c `DATABASE_URL` на него;
+- root FS контейнера только для чтения, запись вынесена в volume `app-data` и `tmpfs` на `/tmp`;
+- запущено под пользователем `1000:1000`, `cap_drop: [ALL]`, `no-new-privileges`, `seccomp` профиль `security/seccomp/chore-tracker.json`, `pids_limit` для ограничения fork-бомб;
+- healthcheck для app и db, `depends_on` ожидает готовность БД.
 
 Lint & scan (local)
 
 ```bash
 hadolint Dockerfile                # Dockerfile lint
 trivy image --severity HIGH,CRITICAL -f json -o trivy-report.json secdev-app:local
+docker history chore-tracker:secure && docker images chore-tracker:secure
 ```
 
 ## Эндпойнты
