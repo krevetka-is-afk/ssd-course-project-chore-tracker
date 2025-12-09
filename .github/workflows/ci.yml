@@ -77,25 +77,29 @@ jobs:
         run: pre-commit run --all-files
 
   security-check:
-   runs-on: ubuntu-latest
-   steps:
-     - uses: actions/checkout@v4
+    name: Security quick scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-     - name: Check for hardcoded secrets
-       run: |
-         echo "Checking for hardcoded secrets..."
-         if grep -r "change_this_to_a_random_secret_key_please" .; then
-           echo "Found hardcoded default secret!"
-           exit 1
-         fi
+      - name: Check for hardcoded default secrets
+        run: |
+          echo "Checking for hardcoded secrets..."
+          DEFAULT_SECRET="change_this_to_a_random_secret_key_please"
+          if grep -R "$DEFAULT_SECRET" . --exclude=".github/workflows/ci.yml" --exclude-dir=".git"; then
+            echo "Found hardcoded default secret!"
+            exit 1
+          fi
 
-         # Проверка простых ключей в коде
-         if grep -r -E "SECRET_KEY\s*=\s*['\"][^'\"\s]{10,}['\"]" . --include="*.py"; then
-           echo "Found potential hardcoded SECRET_KEY!"
-           exit 1
-         fi
+          echo "No hardcoded secrets found"
 
-         echo "No hardcoded secrets found"
+      - name: Gitleaks scan (redacted)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config-path: security/.gitleaks.toml
+          additional-args: --redact --no-banner --no-git
 
   package-and-artifacts:
     name: Coverage report
