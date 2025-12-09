@@ -38,6 +38,13 @@ Badge добавится автоматически после загрузки 
 
 Дополнительно: workflow `Security - IaC & Container (P12)` запускается вручную либо на пушах в `main` и ветки `p12-*` при изменении `Dockerfile`, IaC (`iac/`, `k8s/`, `deploy/`) или `security/**`; конкурентные запуски отменяются, чтобы не копить очереди.
 
+### Secrets / environments
+
+- `DEV_DATABASE_URL` / `DEV_TEST_DB_URL` — строка подключения к dev/test БД (в CI используется SQLite fallback `sqlite:///data/ci_test.sqlite`).
+- `DEV_JWT_SECRET` — секрет подписи JWT для dev/CI (значение скрывается в логах).
+- `STAGING_URL` и `STAGING_DEPLOY_TOKEN` — используются в шаге Deploy to Staging (job с окружением `staging` берет артефакт `python-package` и выполняет мок‑выкладку).
+- Все секреты/vars задаются на уровне GitHub environments (`dev`, `staging`), чтобы разделять доступы и журналы.
+
 ## Контейнеры
 
 ```bash

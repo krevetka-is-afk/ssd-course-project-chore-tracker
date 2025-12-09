@@ -16,6 +16,7 @@ jobs:
     name: Lint & Test (matrix)
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -28,7 +29,11 @@ jobs:
           - os: ubuntu-latest
             python-version: "3.13"
             experimental: true
-
+    env:
+      DATABASE_URL: ${{ secrets.DEV_DATABASE_URL || 'sqlite:///data/ci_test.sqlite' }}
+      TEST_DB_URL: ${{ secrets.DEV_TEST_DB_URL || 'sqlite:///data/ci_test.sqlite' }}
+      JWT_SECRET: ${{ secrets.DEV_JWT_SECRET || 'ci-dev-jwt-secret' }}
+      PYTHONPATH: .
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,7 +46,9 @@ jobs:
       - name: Cache pip
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
+          path: |
+            ~/.cache/pip
+            ~\AppData\Local\pip\Cache
           key: ${{ runner.os }}-py${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml', '**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-py${{ matrix.python-version }}-pip-
@@ -59,12 +66,9 @@ jobs:
           isort --check-only .
 
       - name: Tests
-        env:
-          PYTHONPATH: .
         run: |
           mkdir -p reports
-          echo '<testsuite></testsuite>' > reports/junit.xml
-          echo "Tests placeholder for CI/CD demonstration"
+          pytest --maxfail=1 --disable-warnings --junitxml=reports/junit.xml
 
       - name: Upload test reports
         if: always()
@@ -72,6 +76,7 @@ jobs:
         with:
           name: test-reports-${{ matrix.os }}-py${{ matrix.python-version }}
           path: reports/**
+          if-no-files-found: error
 
       - name: Pre-commit (all files)
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
@@ -105,6 +110,11 @@ jobs:
     needs: lint-and-test
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DEV_DATABASE_URL || 'sqlite:///data/ci_test.sqlite' }}
+      TEST_DB_URL: ${{ secrets.DEV_TEST_DB_URL || 'sqlite:///data/ci_test.sqlite' }}
+      JWT_SECRET: ${{ secrets.DEV_JWT_SECRET || 'ci-dev-jwt-secret' }}
+      PYTHONPATH: .
 
     steps:
       - name: Checkout
@@ -119,8 +129,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          key: ${{ runner.os }}-py311-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml', '**/poetry.lock') }}
           restore-keys: |
+            ${{ runner.os }}-py311-pip-
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
@@ -129,14 +140,12 @@ jobs:
           pip install -r requirements.txt -r requirements-dev.txt
           pip install pytest-cov
 
-#      - name: Tests with coverage
-#        env:
-#          PYTHONPATH: .
-#          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-#          DATABASE_URL: ${{ secrets.TEST_DB_URL }}
-#          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-#        run: |
-#          pytest --cov=app --cov-report=xml --cov-report=html
+      - name: Tests with coverage
+        run: |
+          mkdir -p reports
+          pytest --cov=app --cov=domain \
+            --cov-report=xml --cov-report=html --cov-report=term-missing \
+            --junitxml=reports/junit-coverage.xml
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -146,6 +155,7 @@ jobs:
             coverage.xml
             htmlcov/
             reports/junit-*.xml
+          if-no-files-found: error
 
       - name: Build package
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -194,6 +204,12 @@ jobs:
     needs: [lint-and-test, package-and-artifacts]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL || secrets.STAGING_URL || 'https://staging.chore-tracker.example' }}
+    env:
+      STAGING_URL: ${{ secrets.STAGING_URL || vars.STAGING_URL || 'https://staging.chore-tracker.example' }}
+      DEPLOY_TOKEN: ${{ secrets.STAGING_DEPLOY_TOKEN }}
 
     steps:
       - name: Checkout
@@ -203,11 +219,12 @@ jobs:
         uses: actions/download-artifact@v4.1.3
         with:
           name: python-package
+          path: dist
+
+      - name: Inspect package bundle
+        run: ls -lah dist
 
       - name: Deploy to staging (simulation)
-        env:
-          STAGING_URL: ${{ secrets.STAGING_URL }}
-          DEPLOY_TOKEN: ${{ secrets.STAGING_DEPLOY_TOKEN }}
         run: |
           echo "Deploying to staging environment..."
           echo "Mock deployment completed to $STAGING_URL"
