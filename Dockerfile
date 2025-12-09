@@ -13,8 +13,8 @@ RUN apt-get update && \
 # Copy only requirements first to leverage Docker layer cache
 COPY requirements.txt ./
 
-# Install runtime dependencies from requirements file
-RUN pip install --no-cache-dir --no-deps --prefix=/install --requirement requirements.txt
+# Install runtime dependencies from requirements file (pull transitive deps)
+RUN pip install --no-cache-dir --prefix=/install --requirement requirements.txt
 
 # Copy project sources (after deps) so changes to source don't bust deps layer
 COPY . .
