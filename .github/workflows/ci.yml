@@ -86,9 +86,11 @@ jobs:
 
       - name: Gitleaks scan (redacted)
         uses: gitleaks/gitleaks-action@v2
-        with:
-          config-path: security/.gitleaks.toml
-          additional-args: --redact --no-banner --no-git
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: security/.gitleaks.toml
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
 
   package-and-artifacts:
     name: Coverage report
