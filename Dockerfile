@@ -13,8 +13,8 @@ RUN apt-get update && \
 # Copy only requirements first to leverage Docker layer cache
 COPY requirements.txt ./
 
-# Install runtime dependencies from requirements file
-RUN pip install --no-cache-dir --no-deps --prefix=/install --requirement requirements.txt
+# Install runtime dependencies from requirements file (pull transitive deps)
+RUN pip install --no-cache-dir --prefix=/install --requirement requirements.txt
 
 # Copy project sources (after deps) so changes to source don't bust deps layer
 COPY . .
@@ -22,20 +22,26 @@ COPY . .
 # Runtime stage: minimal, non-root
 FROM python:3.11-slim AS runtime
 
-# Set unbuffered output for logs
-ENV PYTHONUNBUFFERED=1
+# Set unbuffered output for logs and disable .pyc writes (read-only root fs)
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONFAULTHANDLER=1
+
+# Create a non-root user matching docker-compose UID/GID and a writable data dir
+ARG APP_UID=1000
+ARG APP_GID=1000
+RUN addgroup --gid ${APP_GID} appgroup && \
+    adduser --disabled-password --gecos '' --uid ${APP_UID} --gid ${APP_GID} --home /app \
+      --shell /usr/sbin/nologin appuser && \
+    mkdir -p /app/data && chown -R appuser:appgroup /app/data /app
 
 WORKDIR /app
 
-# Create a non-root user and a persistent data directory for SQLite
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup --home /app appuser && \
-    mkdir -p /app/data && chown -R appuser:appgroup /app/data /app
-
-# Copy installed packages from build stage into /usr/local
-COPY --from=build /install /usr/local
+# Copy installed packages from build stage into /usr/local with proper ownership
+COPY --from=build --chown=appuser:appgroup /install /usr/local
 
 # Copy only application code into final image
-COPY --from=build /build .
+COPY --from=build --chown=appuser:appgroup /build .
 
 # Expose port and switch to non-root user
 EXPOSE 8000
