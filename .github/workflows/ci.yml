@@ -16,23 +16,15 @@ jobs:
     name: Lint & Test (matrix)
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
-    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         python-version: [ "3.10", "3.11", "3.12" ]
-        include:
-          - os: ubuntu-latest
-            python-version: "3.11"
-            experimental: false
-          - os: ubuntu-latest
-            python-version: "3.13"
-            experimental: true
     env:
-      DATABASE_URL: ${{ secrets.DEV_DATABASE_URL || 'sqlite:///data/ci_test.sqlite' }}
-      TEST_DB_URL: ${{ secrets.DEV_TEST_DB_URL || 'sqlite:///data/ci_test.sqlite' }}
-      JWT_SECRET: ${{ secrets.DEV_JWT_SECRET || 'ci-dev-jwt-secret' }}
+      DATABASE_URL: "${{ secrets.DEV_DATABASE_URL || 'sqlite:///data/ci_test.sqlite' }}"
+      TEST_DB_URL: "${{ secrets.DEV_TEST_DB_URL || 'sqlite:///data/ci_test.sqlite' }}"
+      JWT_SECRET: "${{ secrets.DEV_JWT_SECRET || 'ci-dev-jwt-secret' }}"
       PYTHONPATH: .
     steps:
       - name: Checkout
@@ -84,26 +76,26 @@ jobs:
           SKIP: no-commit-to-branch
         run: pre-commit run --all-files
 
-#  security-check:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - name: Check for hardcoded secrets
-#        run: |
-#          echo "Checking for hardcoded secrets..."
-#          if grep -r "change_this_to_a_random_secret_key_please" .; then
-#            echo "Found hardcoded default secret!"
-#            exit 1
-#          fi
-#
-#          # Проверка простых ключей в коде
-#          if grep -r -E "SECRET_KEY\s*=\s*['\"][^'\"\s]{10,}['\"]" . --include="*.py"; then
-#            echo "Found potential hardcoded SECRET_KEY!"
-#            exit 1
-#          fi
-#
-#          echo "No hardcoded secrets found"
+  security-check:
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v4
+
+     - name: Check for hardcoded secrets
+       run: |
+         echo "Checking for hardcoded secrets..."
+         if grep -r "change_this_to_a_random_secret_key_please" .; then
+           echo "Found hardcoded default secret!"
+           exit 1
+         fi
+
+         # Проверка простых ключей в коде
+         if grep -r -E "SECRET_KEY\s*=\s*['\"][^'\"\s]{10,}['\"]" . --include="*.py"; then
+           echo "Found potential hardcoded SECRET_KEY!"
+           exit 1
+         fi
+
+         echo "No hardcoded secrets found"
 
   package-and-artifacts:
     name: Coverage report
@@ -111,9 +103,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      DATABASE_URL: ${{ secrets.DEV_DATABASE_URL || 'sqlite:///data/ci_test.sqlite' }}
-      TEST_DB_URL: ${{ secrets.DEV_TEST_DB_URL || 'sqlite:///data/ci_test.sqlite' }}
-      JWT_SECRET: ${{ secrets.DEV_JWT_SECRET || 'ci-dev-jwt-secret' }}
+      DATABASE_URL: "${{ secrets.DEV_DATABASE_URL || 'sqlite:///data/ci_test.sqlite' }}"
+      TEST_DB_URL: "${{ secrets.DEV_TEST_DB_URL || 'sqlite:///data/ci_test.sqlite' }}"
+      JWT_SECRET: "${{ secrets.DEV_JWT_SECRET || 'ci-dev-jwt-secret' }}"
       PYTHONPATH: .
 
     steps:
@@ -206,9 +198,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: staging
-      url: ${{ vars.STAGING_URL || secrets.STAGING_URL || 'https://staging.chore-tracker.example' }}
+      url: ${{ vars.STAGING_URL || 'https://staging.chore-tracker.example' }}
     env:
-      STAGING_URL: ${{ secrets.STAGING_URL || vars.STAGING_URL || 'https://staging.chore-tracker.example' }}
+      STAGING_URL: "${{ secrets.STAGING_URL || vars.STAGING_URL || 'https://staging.chore-tracker.example' }}"
       DEPLOY_TOKEN: ${{ secrets.STAGING_DEPLOY_TOKEN }}
 
     steps:
